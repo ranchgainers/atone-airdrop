@@ -369,60 +369,6 @@
             background: rgba(255, 85, 85, 0.3);
         }
 
-        .search-mode-toggle {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-        }
-
-        .mode-option {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .mode-option:hover {
-            background: rgba(255, 51, 153, 0.2);
-        }
-
-        .mode-option input[type="radio"] {
-            accent-color: #ff3399;
-        }
-
-        .mode-option label {
-            cursor: pointer;
-            margin: 0;
-            font-size: 0.9em;
-            color: #aaa;
-        }
-
-        .mode-option input[type="radio"]:checked + label {
-            color: #ff3399;
-            font-weight: 600;
-        }
-
-        .mode-badge {
-            font-size: 0.7em;
-            padding: 2px 6px;
-            background: rgba(51, 255, 153, 0.2);
-            color: #33ff99;
-            border-radius: 4px;
-            margin-left: 5px;
-        }
-
-        .mode-badge.slow {
-            background: rgba(255, 153, 51, 0.2);
-            color: #ff9933;
-        }
-
         .spinner {
             width: 60px;
             height: 60px;
@@ -512,33 +458,18 @@
             <div class="loading-banner-content">
                 <div class="loading-banner-spinner"></div>
                 <div class="loading-banner-text">
-                    <div class="loading-banner-title" id="bannerTitle">Syncing airdrop data...</div>
-                    <div class="loading-banner-subtitle" id="bannerSubtitle">You can search now, but results may be incomplete until sync finishes</div>
+                    <div class="loading-banner-title" id="bannerTitle">Loading airdrop data...</div>
+                    <div class="loading-banner-subtitle" id="bannerSubtitle">Please wait a moment...</div>
                     <div class="loading-banner-eta" id="bannerEta"></div>
                 </div>
             </div>
             <div class="progress-bar" style="margin-top: 15px;">
                 <div id="progressFill" class="progress-fill"></div>
             </div>
-            <div class="banner-controls">
-                <button class="banner-btn danger" id="stopSyncBtn" onclick="stopSync()">⏸ Stop Sync</button>
-                <button class="banner-btn" id="resyncBtn" onclick="resyncData()" style="display: none;">🔄 Sync Fresh</button>
-            </div>
         </div>
 
         <div id="searchSection">
             <div class="search-container">
-                <div class="search-mode-toggle">
-                    <div class="mode-option">
-                        <input type="radio" id="modeMemory" name="searchMode" value="memory" checked>
-                        <label for="modeMemory">In-Memory Search <span class="mode-badge">⚡ Fast</span></label>
-                    </div>
-                    <div class="mode-option">
-                        <input type="radio" id="modeIndexedDB" name="searchMode" value="indexeddb">
-                        <label for="modeIndexedDB">IndexedDB <span class="mode-badge slow">🔄 Slow Init</span></label>
-                    </div>
-                </div>
-                
                 <div class="input-group">
                     <label for="addressInput">Enter Your Gnoland Address</label>
                     <input 
