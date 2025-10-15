@@ -4,17 +4,18 @@ A modern, static web application for checking GATA airdrop allocations on the Gn
 
 ## Features
 
-- 🚀 **Fast Search**: Uses IndexedDB for instant lookups across 656K+ addresses
-- 💾 **Client-Side Storage**: Data cached in browser for offline access after first load
-- 🎨 **Modern UI**: Beautiful GATA-themed design matching the main website
+- 🚀 **Lightning Fast**: 2-5 second load time, instant search across 656K+ addresses
+- 💾 **Browser Caching**: JSON file cached automatically - subsequent visits even faster
+- 🎨 **Modern UI**: Beautiful GATA-themed design with cat background watermark
 - 📱 **Responsive**: Works perfectly on mobile and desktop
 - ⚡ **Zero Backend**: Fully static, deployable on GitHub Pages
+- 🔍 **Simple**: Clean in-memory search with O(1) hash lookup
 
 ## How It Works
 
-1. **First Visit**: Downloads 33MB JSON file and stores it in IndexedDB (~10-15 seconds)
-2. **Subsequent Visits**: Instant access - no download needed
-3. **Address Lookup**: O(1) indexed search for immediate results
+1. **First Visit**: Downloads 33MB JSON file (~2-5 seconds depending on connection)
+2. **Subsequent Visits**: Browser cache makes it even faster (~1-2 seconds)
+3. **Address Lookup**: O(1) hash lookup in JavaScript object for instant results
 4. **Amount Conversion**: Automatically converts ugnot to GNOT (÷ 1,000,000)
 
 ## File Structure
@@ -70,10 +71,10 @@ The site will be live at: `https://[username].github.io/[repository-name]/`
 
 ### Performance Optimizations
 
-- **Batch Processing**: Inserts 5,000 addresses at a time to avoid blocking UI
-- **Progress Tracking**: Real-time progress bar during initial load
-- **IndexedDB Indexing**: Address field indexed for O(1) lookup
-- **Data Versioning**: Only re-downloads if version changes
+- **In-Memory Storage**: Entire dataset loaded into JavaScript object for instant access
+- **Browser Caching**: Browser automatically caches the JSON file (HTTP cache headers)
+- **O(1) Lookup**: Direct hash table lookup - no scanning or indexing needed
+- **Progressive Loading**: Shows progress during initial JSON download
 
 ### Browser Compatibility
 
@@ -82,7 +83,7 @@ The site will be live at: `https://[username].github.io/[repository-name]/`
 - Safari: ✅ Full support
 - Mobile browsers: ✅ Full support
 
-Requires IndexedDB support (available in all modern browsers).
+Works in all modern browsers with JavaScript enabled.
 
 ### Address Format
 
@@ -105,10 +106,8 @@ When `balances.txt` changes:
 node convert-balances.js
 ```
 
-2. Update `CURRENT_DATA_VERSION` in `app.js`
-3. Commit and deploy
-
-Users will automatically re-download on their next visit.
+2. Commit and deploy
+3. Users will automatically get the new data on their next visit (browser cache will refresh)
 
 ## License
 
