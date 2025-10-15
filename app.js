@@ -16,6 +16,11 @@ let processedAddressCount = 0;
 let syncStopped = false;
 let currentLoadingPromise = null;
 
+// In-memory search mode
+let balancesData = null; // Stores all balances in memory
+let isDataLoaded = false;
+let currentSearchMode = 'memory'; // 'memory' or 'indexeddb'
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', async () => {
     await initializeApp();
@@ -25,18 +30,65 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Initialize IndexedDB and load data if needed
 async function initializeApp() {
     try {
-        db = await openDatabase();
-        const needsUpdate = await checkIfDataNeedsUpdate();
+        // Check which mode is selected
+        const modeRadio = document.querySelector('input[name="searchMode"]:checked');
+        currentSearchMode = modeRadio ? modeRadio.value : 'memory';
         
-        if (needsUpdate) {
-            startSync();
+        if (currentSearchMode === 'memory') {
+            // In-memory mode: Just load JSON into memory
+            await loadDataIntoMemory();
         } else {
-            loadingComplete = true;
-            showResyncButton();
+            // IndexedDB mode: Use the existing IndexedDB flow
+            db = await openDatabase();
+            const needsUpdate = await checkIfDataNeedsUpdate();
+            
+            if (needsUpdate) {
+                startSync();
+            } else {
+                loadingComplete = true;
+                showResyncButton();
+            }
         }
     } catch (error) {
         console.error('Initialization error:', error);
         showError('Failed to initialize the application. Please refresh the page.');
+    }
+}
+
+// Load data into memory (fast mode)
+async function loadDataIntoMemory() {
+    try {
+        showLoadingBanner(true);
+        loadingStartTime = Date.now();
+        updateBannerText('Loading airdrop data...', 'Fast in-memory mode - should take just a few seconds');
+        
+        const response = await fetch('balances.json');
+        if (!response.ok) {
+            throw new Error('Failed to fetch balances data');
+        }
+        
+        // Parse JSON directly into memory
+        balancesData = await response.json();
+        totalAddressCount = Object.keys(balancesData).length;
+        isDataLoaded = true;
+        loadingComplete = true;
+        
+        const loadTime = ((Date.now() - loadingStartTime) / 1000).toFixed(2);
+        
+        updateBannerText(
+            `✅ Data loaded in ${loadTime}s!`,
+            `${totalAddressCount.toLocaleString()} addresses ready for instant search`
+        );
+        updateProgress(100);
+        
+        // Hide banner after 2 seconds
+        setTimeout(() => {
+            showLoadingBanner(false);
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Error loading data into memory:', error);
+        showError('Failed to load airdrop data. Please refresh the page.');
     }
 }
 
@@ -246,6 +298,43 @@ function setupEventListeners() {
     addressInput.addEventListener('input', () => {
         hideResult();
     });
+    
+    // Handle mode change
+    const modeRadios = document.querySelectorAll('input[name="searchMode"]');
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', handleModeChange);
+    });
+}
+
+// Handle search mode change
+async function handleModeChange(e) {
+    const newMode = e.target.value;
+    if (newMode === currentSearchMode) return;
+    
+    currentSearchMode = newMode;
+    hideResult();
+    
+    // Reset state
+    isLoadingData = false;
+    loadingComplete = false;
+    
+    if (newMode === 'memory') {
+        // Switch to in-memory mode
+        if (!isDataLoaded) {
+            await loadDataIntoMemory();
+        }
+    } else {
+        // Switch to IndexedDB mode
+        if (!db) {
+            db = await openDatabase();
+        }
+        const needsUpdate = await checkIfDataNeedsUpdate();
+        if (needsUpdate) {
+            startSync();
+        } else {
+            loadingComplete = true;
+        }
+    }
 }
 
 // Handle check button click
@@ -273,13 +362,20 @@ async function handleCheck() {
     checkBtn.textContent = 'Checking...';
     
     try {
-        const result = await getBalance(address);
+        let result;
+        
+        // Use appropriate search method based on mode
+        if (currentSearchMode === 'memory') {
+            result = getBalanceFromMemory(address);
+        } else {
+            result = await getBalance(address);
+        }
         
         if (result) {
-            const gnot = convertToGNOT(result.amount);
+            const gnot = convertToGNOT(result.amount || result);
             showSuccess(address, gnot);
             lastSearchAddress = null; // Clear since we found it
-        } else if (loadingComplete) {
+        } else if (loadingComplete || isDataLoaded) {
             // Only show "not found" if we've loaded all data
             showError('Address not found in airdrop allocation. This address is not eligible for the airdrop.');
             lastSearchAddress = null;
@@ -299,6 +395,13 @@ async function handleCheck() {
         checkBtn.disabled = false;
         checkBtn.textContent = 'Check Airdrop';
     }
+}
+
+// Get balance from in-memory data (fast O(1) lookup)
+function getBalanceFromMemory(address) {
+    if (!balancesData) return null;
+    const amount = balancesData[address];
+    return amount ? { amount } : null;
 }
 
 // Validate Gnoland address format
