@@ -1,0 +1,10 @@
+# Development files
+node_modules/
+.DS_Store
+
+# Temporary conversion script
+convert-balances.js
+
+# Original text file (keep it for reference but JSON is what we use)
+# balances.txt is tracked as source of truth
+

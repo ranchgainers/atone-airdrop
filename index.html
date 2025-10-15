@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATA Gnoland Airdrop Checker</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a1a 50%, #0a0a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* GATA Cat background decoration */
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -100px;
+            right: -100px;
+            width: 600px;
+            height: 600px;
+            background-image: url('gataCat.webp');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(1px);
+        }
+
+        @media (max-width: 768px) {
+            body::after {
+                width: 400px;
+                height: 400px;
+                bottom: -80px;
+                right: -80px;
+            }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-top: 40px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(255, 51, 153, 0.3));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #ff3399, #9933ff, #3399ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1em;
+        }
+
+        .search-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 51, 153, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #ff3399;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 1em;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 51, 153, 0.3);
+            border-radius: 12px;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ff3399;
+            box-shadow: 0 0 20px rgba(255, 51, 153, 0.3);
+        }
+
+        input[type="text"]::placeholder {
+            color: #666;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1em;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff3399, #9933ff);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 51, 153, 0.3);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 51, 153, 0.5);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(51, 153, 255, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        .result-container.error {
+            border-color: rgba(255, 51, 51, 0.5);
+        }
+
+        .result-container.success {
+            border-color: rgba(51, 255, 153, 0.5);
+        }
+
+        .result-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #ff3399;
+        }
+
+        .result-amount {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #33ff99, #3399ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .result-unit {
+            color: #888;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .result-address {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            padding: 10px 20px;
+            background: rgba(255, 51, 153, 0.2);
+            border: 1px solid #ff3399;
+            border-radius: 8px;
+            color: #ff3399;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 51, 153, 0.3);
+        }
+
+        .error-message {
+            color: #ff5555;
+            font-size: 1.1em;
+        }
+
+        .loading-banner {
+            background: linear-gradient(135deg, rgba(255, 51, 153, 0.2), rgba(153, 51, 255, 0.2));
+            border: 2px solid rgba(255, 51, 153, 0.4);
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            display: none;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .loading-banner.show {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .loading-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .loading-banner-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 51, 153, 0.3);
+            border-top: 3px solid #ff3399;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            flex-shrink: 0;
+        }
+
+        .loading-banner-text {
+            flex-grow: 1;
+        }
+
+        .loading-banner-title {
+            font-size: 1.1em;
+            color: #ff3399;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .loading-banner-subtitle {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .loading-banner-eta {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .banner-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .banner-btn {
+            padding: 8px 16px;
+            background: rgba(255, 51, 153, 0.2);
+            border: 1px solid #ff3399;
+            border-radius: 6px;
+            color: #ff3399;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .banner-btn:hover {
+            background: rgba(255, 51, 153, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .banner-btn:active {
+            transform: translateY(0);
+        }
+
+        .banner-btn.danger {
+            border-color: #ff5555;
+            color: #ff5555;
+            background: rgba(255, 85, 85, 0.2);
+        }
+
+        .banner-btn.danger:hover {
+            background: rgba(255, 85, 85, 0.3);
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(255, 51, 153, 0.2);
+            border-top: 4px solid #ff3399;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2em;
+            color: #ff3399;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff3399, #9933ff);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        footer a {
+            color: #ff3399;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .search-container,
+            .result-container {
+                padding: 25px;
+            }
+            
+            .result-amount {
+                font-size: 2.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="gata-logo.svg" alt="GATA Logo">
+            </div>
+            <h1>GATA Gnoland Airdrop Checker</h1>
+            <p class="subtitle">Check your GNOT allocation</p>
+        </header>
+
+        <div id="loadingBanner" class="loading-banner">
+            <div class="loading-banner-content">
+                <div class="loading-banner-spinner"></div>
+                <div class="loading-banner-text">
+                    <div class="loading-banner-title" id="bannerTitle">Syncing airdrop data...</div>
+                    <div class="loading-banner-subtitle" id="bannerSubtitle">You can search now, but results may be incomplete until sync finishes</div>
+                    <div class="loading-banner-eta" id="bannerEta"></div>
+                </div>
+            </div>
+            <div class="progress-bar" style="margin-top: 15px;">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div class="banner-controls">
+                <button class="banner-btn danger" id="stopSyncBtn" onclick="stopSync()">⏸ Stop Sync</button>
+                <button class="banner-btn" id="resyncBtn" onclick="resyncData()" style="display: none;">🔄 Sync Fresh</button>
+            </div>
+        </div>
+
+        <div id="searchSection">
+            <div class="search-container">
+                <div class="input-group">
+                    <label for="addressInput">Enter Your Gnoland Address</label>
+                    <input 
+                        type="text" 
+                        id="addressInput" 
+                        placeholder="g1p3ucd3ptpw902fluyjzhq3ffgq4ntddatev7s5"
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                </div>
+                <button class="btn" id="checkBtn">Check Airdrop</button>
+            </div>
+
+            <div id="resultContainer" class="result-container">
+                <div class="result-title" id="resultTitle">Your Airdrop Allocation</div>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                GATA Public Infra • 
+                <a href="https://gatahub.zone" target="_blank">gatahub.zone</a> • 
+                <a href="https://github.com/ranchgainers/atone-airdrop" target="_blank">GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
