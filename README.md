@@ -111,5 +111,7 @@ node convert-balances.js
 
 ## License
 
-© GATA Public Infra
+MIT License - see [LICENSE](LICENSE) file for details
+
+© 2025 GATA Public Infra
 
